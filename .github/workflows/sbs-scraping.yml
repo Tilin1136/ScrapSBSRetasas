@@ -2,7 +2,7 @@ name: Scraping SBS Diario
 
 on:
   schedule:
-    - cron: '0 5 * * *'  # Ejecutar cada día a las 00:00 hora Perú (5:00 UTC)
+    - cron: '0 5 * * *'  # Ejecuta todos los días a las 00:00 hora Perú (5:00 UTC)
   workflow_dispatch:
 
 jobs:
@@ -23,33 +23,31 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Ejecutar scraper en headless
+      - name: Ejecutar scraper headless con Xvfb
         env:
           DISPLAY: :99
         run: |
           sudo chmod 1777 /dev/shm
-          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
           python sbs_scraping.py
 
-      - name: Subir resultados como artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: datos-sbs-${{ github.run_number }}
-          path: SBS-RETASAS-*
-          if-no-files-found: error
-
-      - name: Commit y Push de resultados
-        if: success()
+      - name: Commit y push de carpeta generada
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git pull --rebase
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Configura URL remota con token para autenticar el push
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+
+          git pull --rebase origin main
+
           git add SBS-RETASAS-*
-          if git diff-index --quiet HEAD --; then
+          if git diff --cached --quiet; then
             echo "No hay cambios para commitear"
           else
-            git commit -m "Actualización SBS ${{ github.run_number }}"
-            git push origin HEAD:${{ github.ref }}
+            git commit -m "Actualización automática de datos SBS $(date +'%d-%m-%Y %H:%M')"
+            git push origin main
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
