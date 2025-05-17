@@ -21,7 +21,6 @@ jobs:
     - name: Instalar Chrome y Chromedriver
       uses: nanasess/setup-chromedriver@v1
       with:
-        chrome-version: 'latest-stable'
         chromedriver-version: 'latest-stable'
 
     - name: Instalar dependencias
