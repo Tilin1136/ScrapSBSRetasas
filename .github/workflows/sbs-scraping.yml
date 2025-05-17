@@ -2,9 +2,8 @@ name: Scraping SBS Diario
 
 on:
   schedule:
-    # 12am Hora Perú = 5am UTC (UTC-5)
-    - cron: '0 5 * * *'
-  workflow_dispatch:  # Para ejecución manual
+    - cron: '0 5 * * *'  # 12am Hora Perú
+  workflow_dispatch:
 
 jobs:
   scrape:
@@ -22,8 +21,8 @@ jobs:
     - name: Instalar Chrome
       uses: nanasess/setup-chromedriver@v1
       with:
-        chrome-version: 'latest'
-        chromedriver-version: 'latest'
+        chrome-version: 'latest-stable'
+        chromedriver-version: 'latest-stable'
 
     - name: Instalar dependencias
       run: |
@@ -40,8 +39,25 @@ jobs:
 
     - name: Subir resultados como artifact
       uses: actions/upload-artifact@v3
-      if: always()
       with:
-        name: datos-sbs-${{ github.run_id }}
-        path: SBS-RETASAS-*/
-        
+        name: datos-sbs-${{ github.run_number }}
+        path: |
+          SBS-RETASAS-*
+          error_screenshot.png
+        retention-days: 7
+
+    - name: Commit y Push de resultados
+      if: success() 
+      run: |
+        git config --global user.email "actions@github.com"  
+        git config --global user.name "GitHub Actions"
+        git pull --rebase
+        git add SBS-RETASAS-*
+        if git diff-index --quiet HEAD --; then
+          echo "Sin cambios para commitear"
+        else
+          git commit -m "Actualización automática SBS - ${{ github.run_number }}"
+          git push origin HEAD:main
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
