@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 selenium
 pandas
 openpyxl
 xlsxwriter
+=======
+selenium
+pandas
+openpyxl
+xlsxwriter
+>>>>>>> 4d5f184a305a8f33b6a4d6f548ccd0347b911b09
 webdriver-manager
