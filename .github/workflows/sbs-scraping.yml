@@ -2,7 +2,7 @@ name: Scraping SBS Diario
 
 on:
   schedule:
-    - cron: '0 5 * * *'  # Ejecuta todos los días a las 00:00 hora Perú (5:00 UTC)
+    - cron: '0 17 * * *'  # Ejecuta todos los días a las 00:00 hora Perú (5:00 UTC)
   workflow_dispatch:
 
 jobs:
