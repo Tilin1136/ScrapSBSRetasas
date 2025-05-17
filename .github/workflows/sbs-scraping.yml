@@ -2,15 +2,15 @@ name: Scraping SBS Diario
 
 on:
   schedule:
-    - cron: '0 17 * * *'  # Ejecuta todos los días a las 12:00 hora Perú (5:00 UTC)
-  workflow_dispatch:
+    - cron: '0 5 * * *'  # Se ejecuta todos los días a las 00:00 hora Perú (5:00 UTC)
+  workflow_dispatch:     # Permite ejecución manual
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout del código
+      - name: Checkout del repositorio
         uses: actions/checkout@v4
 
       - name: Configurar Python 3.10
@@ -23,31 +23,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Ejecutar scraper headless con Xvfb
+      - name: Ejecutar scraping con Selenium
         env:
           DISPLAY: :99
         run: |
-          sudo chmod 1777 /dev/shm
-          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
-          python sbs_scraping.py
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          Xvfb :99 &  # Simula entorno gráfico
+          python sbs_scraping.py  # O cambia al nombre real de tu script
 
-      - name: Commit y push de carpeta generada
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configurar Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Configura URL remota con token para autenticar el push
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
-
-          git pull --rebase origin main
-
-          git add SBS-RETASAS-*
-          if git diff --cached --quiet; then
-            echo "No hay cambios para commitear"
-          else
-            git commit -m "Actualización automática de datos SBS $(date +'%d-%m-%Y %H:%M')"
-            git push origin main
-          fi
-
+      - name: Autenticarse con PAT y hacer push
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git add .
+          git diff --cached --quiet || ( \
+            git commit -m "Datos actualizados automáticamente al $(date '+%d-%m-%Y %H:%M')" && \
+            git remote set-url origin https://x-access-token:${PAT_TOKEN}@github.com/Tilin1136/ScrapSBSRetasas.git && \
+            git push origin main \
+          )
