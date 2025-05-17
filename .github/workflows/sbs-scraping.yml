@@ -42,8 +42,8 @@ jobs:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git remote set-url origin https://x-access-token:${PAT_TOKEN}@github.com/Tilin1136/ScrapSBSRetasas.git
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
 
           git add .
           git diff --cached --quiet || (
