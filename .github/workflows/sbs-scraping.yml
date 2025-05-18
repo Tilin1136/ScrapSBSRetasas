@@ -33,7 +33,7 @@ jobs:
 
       - name: Autenticarse con PAT y hacer push
         env:
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git remote set-url origin https://x-access-token:${PAT_TOKEN}@github.com/Tilin1136/ScrapSBSRetasas.git
           git config --global user.name "github-actions"
